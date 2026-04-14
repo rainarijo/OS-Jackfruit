@@ -48,7 +48,7 @@ The runtime was used to analyze Linux scheduling behavior using CPU-bound worklo
 Container 1: nice = 0 (default priority)
 Container 2: nice = 19 (lower priority)
 
-Screenshot
+Screenshot:
 ![Scheduling](screenshots/Scheduling.png)
 
 Caption:
