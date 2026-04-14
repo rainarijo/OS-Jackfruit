@@ -144,28 +144,31 @@ ps aux | grep defunct
 ### Screenshot 1 — Multi-container supervision
 *Caption: Two containers (alpha and beta) running under a single supervisor process. The supervisor terminal shows both containers started with their PIDs.*
 
-`[INSERT SCREENSHOT]`
+<img width="920" height="148" alt="image" src="https://github.com/user-attachments/assets/702b38a3-228d-4a66-902d-8059490ee660" />
+
 
 ---
 
 ### Screenshot 2 — Metadata tracking
 *Caption: Output of `./engine ps` showing container ID, PID, state, memory limits, and start time for both running containers.*
+<img width="924" height="120" alt="image" src="https://github.com/user-attachments/assets/09593b1a-d240-4ed9-80cd-4ad651c3e033" />
 
-`[INSERT SCREENSHOT]`
 
 ---
 
 ### Screenshot 3 — Bounded-buffer logging
 *Caption: Contents of `logs/alpha.log` written via the producer-consumer logging pipeline. The supervisor terminal shows producer activity when the container writes output.*
 
-`[INSERT SCREENSHOT]`
+<img width="927" height="159" alt="image" src="https://github.com/user-attachments/assets/8d6b2b5b-6690-4082-b7f9-c5bff38db88e" />
+
 
 ---
 
 ### Screenshot 4 — CLI and IPC
 *Caption: A `./engine stop alpha` command being issued in Terminal 2, and the supervisor in Terminal 1 responding with a SIGTERM delivery confirmation — demonstrating the UNIX domain socket IPC channel.*
 
-`[INSERT SCREENSHOT]`
+<img width="923" height="493" alt="image" src="https://github.com/user-attachments/assets/2a82841e-6c04-4f71-8145-2d9a1086a3c6" />
+
 
 ---
 
