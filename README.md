@@ -11,14 +11,14 @@ Hard limit: Terminates the process using SIGKILL when the limit is exceeded.
 
 Screenshots
 
-![Soft Limit](screenshots/Soft Limit.png)
+![Soft Limit](screenshots/Soft Limit.PNG)
 
 Caption:
 Kernel log showing a container exceeding the soft memory limit, triggering a warning without terminating the process.
 
 Hard Limit Enforcement
 
-![Hard Limit](screenshots/Hard Limit.png)
+![Hard Limit](screenshots/Hard Limit.PNG)
 
 Caption:
 Kernel log showing the container being terminated after exceeding the hard memory limit; supervisor metadata reflects the killed state.
@@ -49,7 +49,7 @@ Container 1: nice = 0 (default priority)
 Container 2: nice = 19 (lower priority)
 
 Screenshot
-![Scheduling](screenshots/Scheduling.png)
+![Scheduling](screenshots/Scheduling.PNG)
 
 Caption:
 Output from top showing two CPU-bound containers with different CPU utilization based on their nice values.
@@ -84,7 +84,7 @@ Closing file descriptors
 Freeing kernel data structures during module unload
 
 Screenshot:
-![Cleanup](screenshots/CleanUp.png)
+![Cleanup](screenshots/CleanUp.PNG)
 
 Caption:
 System state after cleanup showing no zombie processes and successful unloading of the kernel module.
