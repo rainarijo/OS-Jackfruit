@@ -173,30 +173,30 @@ ps aux | grep defunct
 ---
 
 ### Screenshot 5 — Soft-limit warning
-*Caption: `dmesg` output showing a `[container_monitor] SOFT LIMIT` warning for the memory_hog container after its RSS exceeded the configured soft limit.*
+*Caption: `dmesg` output showing a `[container_monitor] SOFT LIMIT` warning for the memtest container after its RSS exceeded the configured soft limit. The process continues running after the warning.*
 
-`[INSERT SCREENSHOT]`
+<img width="1224" height="472" alt="image" src="https://github.com/user-attachments/assets/e99a1794-7c51-4f10-b014-61aeef05b929" />
 
 ---
 
 ### Screenshot 6 — Hard-limit enforcement
-*Caption: `dmesg` showing a `[container_monitor] HARD LIMIT` kill event, and `./engine ps` showing the container state as `killed` with `stop_requested=0` confirming it was the kernel module that terminated it.*
+*Caption: `dmesg` output showing a `[container_monitor] HARD LIMIT` event where the memtest container is terminated using SIGKILL after exceeding the hard limit. The `./engine ps` output confirms the container state as `killed`.*
 
-`[INSERT SCREENSHOT]`
+<img width="1074" height="456" alt="image" src="https://github.com/user-attachments/assets/714b9182-d263-4aaf-badc-83a2ffe538a5" />
 
 ---
 
 ### Screenshot 7 — Scheduling experiment
-*Caption: Side-by-side terminal output of cpu_hog running at nice=0 vs nice=10, showing measurable difference in completed iterations over the same wall-clock interval.*
+*Caption: Output of `top` showing two CPU-bound containers (`sched1` with nice=0 and `sched2` with nice=19) running concurrently. The higher-priority container (nice=0) receives significantly more CPU time.*
 
-`[INSERT SCREENSHOT]`
+<img width="869" height="421" alt="image" src="https://github.com/user-attachments/assets/94a308d5-6a28-4e6f-987d-17f687514018" />
 
 ---
 
 ### Screenshot 8 — Clean teardown
-*Caption: `ps aux | grep defunct` returning no results after supervisor shutdown, and the supervisor terminal printing "[supervisor] clean exit" after joining the logger thread.*
+*Caption: `dmesg` confirms the kernel module was successfully unloaded, and `ps aux | grep defunct` shows no zombie processes, demonstrating proper cleanup of all resources.*
 
-`[INSERT SCREENSHOT]`
+<img width="953" height="264" alt="image" src="https://github.com/user-attachments/assets/af487717-9e24-48ca-b61d-901b56244c26" />
 
 ---
 
@@ -242,13 +242,15 @@ The enforcement mechanism belongs in kernel space because user-space enforcement
 
 ### 4.5 Scheduling Behavior
 
-*(Complete this section after running your Task 5 scheduling experiments. Use the template below.)*
+Linux uses the Completely Fair Scheduler (CFS) to allocate CPU time among processes. CFS tracks each process's virtual runtime (`vruntime`), which increases proportionally to CPU usage and is weighted by the process's nice value. Processes with lower `vruntime` are scheduled first.
 
-Linux uses the Completely Fair Scheduler (CFS) by default. CFS tracks each process's `vruntime` — a virtual clock that advances proportionally to how much CPU time the process has consumed, weighted by its nice value. The process with the lowest `vruntime` is always scheduled next. A higher nice value (e.g., nice=10) increases the CFS weight divisor, causing `vruntime` to advance faster for the same wall-clock CPU time — the scheduler sees the process as having consumed more time and deprioritizes it.
+In our experiment, two CPU-bound containers were executed concurrently:
+- `sched1` with nice=0 (default priority)
+- `sched2` with nice=19 (lowest priority)
 
-In our experiment, two `cpu_hog` containers ran simultaneously: one at nice=0 and one at nice=10. Over a 10-second window, the nice=0 container completed approximately X% more iterations than the nice=10 container, demonstrating that CFS honored the priority difference. This relates to the scheduler goal of weighted fairness: CFS does not give equal CPU time to both, but proportional time based on nice weight.
+Using the `top` command, we observed that the container with nice=0 consistently received a higher percentage of CPU time compared to the container with nice=19. This demonstrates that CFS assigns CPU time proportionally based on priority.
 
-In the I/O-bound experiment, an `io_pulse` container running alongside a `cpu_hog` container showed that the I/O-bound container had better interactive responsiveness (lower latency on each I/O operation) because it voluntarily yields the CPU while waiting for I/O, keeping its `vruntime` low and allowing it to preempt the CPU-bound container when it wakes up.
+The lower-priority container (nice=19) accumulated `vruntime` faster, causing the scheduler to deprioritize it in favor of the higher-priority container. This behavior reflects the scheduler’s goal of weighted fairness, where CPU allocation is distributed based on process priority rather than equally.
 
 ---
 
@@ -298,31 +300,23 @@ In the I/O-bound experiment, an `io_pulse` container running alongside a `cpu_ho
 
 ## 6. Scheduler Experiment Results
 
-*(Fill in with actual measured values after running your experiments.)*
-
 ### Experiment Setup
 
-Two containers run simultaneously for 30 seconds. Both execute `cpu_hog`, which increments a counter in a tight loop and prints the count every second. Container A runs at nice=0 (default priority). Container B runs at nice=10 (lower priority).
+Two containers were run simultaneously using the `cpu_hog` workload:
+- Container A (`sched1`) with nice=0
+- Container B (`sched2`) with nice=19
 
-### Raw Data
+Both were observed using the `top` command while running concurrently.
 
-| Second | Container A (nice=0) iterations | Container B (nice=10) iterations |
-|--------|--------------------------------|----------------------------------|
-| 1      | [value]                        | [value]                          |
-| 5      | [value]                        | [value]                          |
-| 10     | [value]                        | [value]                          |
-| 30     | [value]                        | [value]                          |
-| **Total** | **[total A]**               | **[total B]**                    |
+### Observations
 
-### I/O vs CPU Comparison
-
-| Workload | nice value | CPU time used (s) | Wall time (s) | Avg latency per op |
-|----------|------------|-------------------|---------------|--------------------|
-| cpu_hog  | 0          | ~29               | 30            | N/A                |
-| io_pulse | 0          | ~3                | 30            | [value] ms         |
+| Container | Nice Value | CPU Usage (%) |
+|----------|-----------|--------------|
+| sched1   | 0         | ~70–80%      |
+| sched2   | 19        | ~20–30%      |
 
 ### Analysis
 
-Container A completed approximately X times more iterations than Container B over the same 30-second window. This matches the CFS weight ratio: a nice=10 process has a weight of 110 while nice=0 has a weight of 1024, giving nice=0 roughly a 9:1 CPU time advantage under equal contention.
+The results show that the container with higher priority (nice=0) consistently received a larger share of CPU time compared to the lower-priority container (nice=19). This behavior aligns with the design of the Completely Fair Scheduler (CFS), which distributes CPU time based on weighted priorities.
 
-The I/O-bound container (`io_pulse`) voluntarily yields the CPU during each `sleep()` or `read()` call. Because it is not consuming its full time slice, CFS keeps its `vruntime` low, and it gets scheduled quickly when it wakes up. This demonstrates the scheduler's responsiveness goal: I/O-bound processes get low latency even when competing with CPU-bound ones.
+The experiment confirms that CPU-bound processes are scheduled proportionally according to their nice values, demonstrating the scheduler’s fairness and priority-based allocation mechanism.
